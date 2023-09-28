@@ -1,0 +1,25 @@
+{
+  "name": "pcvalue",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JnsRdnp/pcValue.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JnsRdnp/pcValue/issues"
+  },
+  "homepage": "https://github.com/JnsRdnp/pcValue#readme",
+  "dependencies": {
+    "mocha": "^10.2.0",
+    "prompt-sync": "^4.2.0",
+    "selenium-webdriver": "^4.13.0"
+  }
+}
