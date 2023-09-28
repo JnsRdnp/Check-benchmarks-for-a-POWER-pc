@@ -92,6 +92,7 @@ async function getPC2(pclink, driver) {
 
   try {
     await driver.findElement(By.className('coi-banner__accept')).click();
+
   } catch (error) {
     console.log("Error in finding and clicking the accept button:");
   }
@@ -99,6 +100,12 @@ async function getPC2(pclink, driver) {
   try {
     let teknisettiedotLocation = `//*[contains(text(),'Tekniset tiedot')]`;
     await driver.findElement(By.xpath(teknisettiedotLocation)).click();
+
+    let teknisetBtn = await driver.findElement(By.xpath(teknisettiedotLocation));
+
+    await driver.wait(until.elementIsVisible(teknisetBtn), 10000);
+
+
   } catch (error) {
     console.log("Error in clicking 'Tekniset tiedot':");
   }
