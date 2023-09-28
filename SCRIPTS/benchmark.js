@@ -1,18 +1,24 @@
 const { By, Key, Builder } = require('selenium-webdriver');
+const { until } = require('selenium-webdriver');
+
 const prompt = require('prompt-sync')({ sigint: true });
 
-/* document.addEventListener("DOMContentLoaded", function () {
-  document.getElementById("fetchButton").addEventListener("click", main);
-}); */
 
 async function getBenchmark(processor, driver) {
   try {
     await driver.get('https://www.cpubenchmark.net/cpu_list.php');
     
     try {
-      await driver.findElement(By.className('css-47sehv')).click();
+      
+      let cookieBtn = await driver.findElement(By.className('css-47sehv'));
+
+      await driver.wait(until.elementIsVisible(cookieBtn), 10000);
+
+      await cookieBtn.click();
+
     } catch (clickError) {
       console.error('Error clicking element:', clickError.message);
+      driver.quit();
     }
     
     let xpathExpression = `//*[contains(text(),'${processor}')]`;
@@ -59,8 +65,10 @@ async function getGPUBenchmark(GPU, driver) {
       let text = await element.getText();
       let siblingText = await nextSibling.getText();
       //console.log(text, '\n', siblingText);
-      return(text,siblingText);
       
+      
+      await driver.quit();
+      return(text,siblingText);
     } catch (findError) {
       console.error('Error finding element:', findError.message);
     }
@@ -133,12 +141,13 @@ async function main(){
 
   let driver = null;
       try{
-      const pclink = prompt("link to pc(press e to quit):");
+      const pclink = prompt("Give link to PC(press e to quit): ");
 
       driver = await new Builder().forBrowser('chrome').build();
 
-      if (pclink === "e") {
 
+      if (pclink === "e") {
+        console.log("Closing driver");
         await driver.quit();
         
       } else {
@@ -147,8 +156,6 @@ async function main(){
         console.log(pcInfo);
         let cpuB = await getBenchmark(pcInfo[1],driver);
         let gpuB = await getGPUBenchmark(pcInfo[2],driver);
-        console.log(cpuB);
-        console.log(gpuB);
 
         console.log("Value of cpu: ",((parseInt(cpuB))/parseFloat(pcInfo[0])).toFixed(2));
         console.log("Value of gpu: ",((parseInt(gpuB))/parseFloat(pcInfo[0])).toFixed(2));
