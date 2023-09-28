@@ -1,6 +1,8 @@
 const { By, Key, Builder } = require('selenium-webdriver');
 const { until } = require('selenium-webdriver');
 
+
+
 const prompt = require('prompt-sync')({ sigint: true });
 
 
@@ -8,7 +10,7 @@ async function getBenchmark(processor, driver) {
   try {
     await driver.get('https://www.cpubenchmark.net/cpu_list.php');
     
-    try {
+/*     try {
       
       let cookieBtn = await driver.findElement(By.className('css-47sehv'));
 
@@ -18,8 +20,8 @@ async function getBenchmark(processor, driver) {
 
     } catch (clickError) {
       console.error('Error clicking element:', clickError.message);
-      driver.quit();
-    }
+      //driver.quit();
+    } */
     
     let xpathExpression = `//*[contains(text(),'${processor}')]`;
 
@@ -46,17 +48,21 @@ async function getBenchmark(processor, driver) {
   }
 }
 
-async function getGPUBenchmark(GPU, driver) {
+async function getGPUBenchmark(GPUinput, driver) {
   try {
     await driver.get('https://www.videocardbenchmark.net/gpu_list.php');
-    try {
-      cookieBtn = await driver.findElement(By.className('css-47sehv'));
+/*     try {
+      let cookieBtn = await driver.findElement(By.className('css-47sehv'));
+
+      await driver.wait(until.elementIsVisible(cookieBtn), 10000);
+
       await cookieBtn.click();
+
     } catch (clickError) {
       console.error('Error clicking element:', clickError.message);
-    }
-    
-    let xpathExpression = `//*[contains(text(),'${GPU}')]`;
+    } */
+    //let GPU =  await GPUinput.toLowerCase();
+    let xpathExpression = `//*[contains(text(),'${GPUinput}')]`;
 
     try {
       let element = await driver.findElement(By.xpath(xpathExpression));
@@ -150,7 +156,8 @@ async function main(){
       try{
       const pclink = prompt("Give link to PC(press e to quit): ");
 
-      driver = await new Builder().forBrowser('chrome').build();
+      //driver = await new Builder().forBrowser('chrome').build();
+      let driver = await new Builder().forBrowser('firefox').build();
 
 
       if (pclink === "e") {
@@ -163,6 +170,9 @@ async function main(){
         console.log(pcInfo);
         let cpuB = await getBenchmark(pcInfo[1],driver);
         let gpuB = await getGPUBenchmark(pcInfo[2],driver);
+
+        console.log(cpuB);
+        console.log(gpuB);
 
         console.log("Value of cpu: ",((parseInt(cpuB))/parseFloat(pcInfo[0])).toFixed(2));
         console.log("Value of gpu: ",((parseInt(gpuB))/parseFloat(pcInfo[0])).toFixed(2));
