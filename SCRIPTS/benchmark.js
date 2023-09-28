@@ -69,39 +69,32 @@ async function getPC2(pclink,driver) {
 
 
 async function main(){
-  while (true) {
-    let driver = null;
 
+  let driver = null;
       try{
-      const pclink = prompt("(e to quit) link to pc:");
+      const pclink = prompt("link to pc(press e to quit):");
 
       driver = await new Builder().forBrowser('chrome').build();
 
       if (pclink === "e") {
 
-        await driver.close();
         await driver.quit();
         
-        break;
       } else {
         
         let cpuName = await getPC2(pclink,driver);
         console.log("cpu is: ",cpuName)
         await getBenchmark(cpuName,driver);
 
-        await driver.close();
         await driver.quit();
       }
       }catch (error){
       
       }finally{     
-
+/*         if (driver) {
+          await driver.quit();
+        } */
       }
-      if (driver) {
-        //await driver.quit();
-      }
-  }
 }
 
 main();
-
