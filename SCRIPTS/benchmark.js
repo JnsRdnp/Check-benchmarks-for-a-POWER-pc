@@ -22,7 +22,10 @@ async function getBenchmark(processor, driver) {
       let text = await element.getText();
       let siblingText = await nextSibling.getText();
       //console.log(text, '\n', siblingText);
-      return (text,siblingText);
+
+      const cpuBMWithoutCommas = siblingText.replace(/,/g, '');
+
+      return (text,cpuBMWithoutCommas);
 
     } catch (findError) {
       console.error('Error finding element:', findError.message);
@@ -144,6 +147,7 @@ async function main(){
         let gpuB = await getGPUBenchmark(pcInfo[2],driver);
         console.log(cpuB);
         console.log(gpuB);
+        console.log("Value of this pc: ",(parseInt(cpuB)+parseInt(gpuB))/parseFloat(pcInfo[0]));
 
         if (driver) {
           await driver.quit();
