@@ -1,72 +1,128 @@
 const { By, Key, Builder } = require('selenium-webdriver');
 const prompt = require('prompt-sync')({ sigint: true });
 
-//require('chromedriver');
 
-async function getBenchmark(processor,driver) {
-  /* let driver = await new Builder().forBrowser('chrome').build(); */
 
+async function getBenchmark(processor, driver) {
   try {
     await driver.get('https://www.cpubenchmark.net/cpu_list.php');
-
-    await driver.findElement(By.className('css-47sehv')).click();
-
+    
+    try {
+      await driver.findElement(By.className('css-47sehv')).click();
+    } catch (clickError) {
+      console.error('Error clicking element:', clickError.message);
+    }
+    
     let xpathExpression = `//*[contains(text(),'${processor}')]`;
 
-    let element = await driver.findElement(By.xpath(xpathExpression));
+    try {
+      let element = await driver.findElement(By.xpath(xpathExpression));
+      let parentElement = await element.findElement(By.xpath('..'));
+      let nextSibling = await parentElement.findElement(By.xpath('following-sibling::*'));
+      let text = await element.getText();
+      let siblingText = await nextSibling.getText();
+      //console.log(text, '\n', siblingText);
+      return (text,siblingText);
 
-    let parentElement = await element.findElement(By.xpath('..'));
-    let nextSibling = await parentElement.findElement(By.xpath('following-sibling::*'));
-
-    let text = await element.getText();
-    let siblingText = await nextSibling.getText();
-
-    console.log(text, '\n', siblingText);
-
-  } catch (error) {
-    //console.error('An error occurred:', error);
-  } finally {
-    if (driver) {
-      await driver.close();
-      await driver.quit();
+    } catch (findError) {
+      console.error('Error finding element:', findError.message);
     }
+  } catch (error) {
+    // Handle errors related to navigation, etc.
+    console.error('Outer error CPU:', error.message);
+  } finally {
+    // Cleanup or additional actions to perform regardless of success or failure
   }
 }
 
-async function getPC2(pclink,driver) {
-    //let driver = null; // Initialize the driver variable outside the try block
-  
+async function getGPUBenchmark(GPU, driver) {
+  try {
+    await driver.get('https://www.videocardbenchmark.net/gpu_list.php');
     try {
-        //driver = await new Builder().forBrowser('chrome').build();
-    
-        await driver.get(pclink);
-    
-        await driver.findElement(By.className('coi-banner__accept')).click();
-    
-        // Get the text from the element with the specified class name
-
-        let teknisettiedotLocation = `//*[contains(text(),'Tekniset tiedot')]`;
-
-        await driver.findElement(By.xpath(teknisettiedotLocation)).click();
-
-        
-        let prossessorModelXPATH = `//*[contains(text(),'Prosessori (malli)')]`;
-        let prossorinMalliTektsi = await driver.findElement(By.xpath(prossessorModelXPATH));
-
-        let cpuMODEL = await prossorinMalliTektsi.findElement(By.xpath('following-sibling::*')).getText();
-
-        return cpuMODEL;
-
-
-        } catch (error) {
-          //console.error("An error occurred:", error);
-        } finally {
-/*             if (driver) {
-              await driver.quit();
-        } */
+      cookieBtn = await driver.findElement(By.className('css-47sehv'));
+      await cookieBtn.click();
+    } catch (clickError) {
+      console.error('Error clicking element:', clickError.message);
     }
+    
+    let xpathExpression = `//*[contains(text(),'${GPU}')]`;
+
+    try {
+      let element = await driver.findElement(By.xpath(xpathExpression));
+      let parentElement = await element.findElement(By.xpath('..'));
+      let nextSibling = await parentElement.findElement(By.xpath('following-sibling::*'));
+      let text = await element.getText();
+      let siblingText = await nextSibling.getText();
+      //console.log(text, '\n', siblingText);
+      return(text,siblingText);
+      
+    } catch (findError) {
+      console.error('Error finding element:', findError.message);
+    }
+  } catch (error) {
+    // Handle errors related to navigation, etc.
+    console.error('Outer error GPU:', error.message);
+  } finally {
+    // Cleanup or additional actions to perform regardless of success or failure
+  }
+}
+
+
+
+
+async function getPC2(pclink, driver) {
+  try {
+    await driver.get(pclink);
+  } catch (error) {
+    console.log("Error in driver.get:");
   }
 
+  try {
+    await driver.findElement(By.className('coi-banner__accept')).click();
+  } catch (error) {
+    console.log("Error in finding and clicking the accept button:");
+  }
+
+  try {
+    let teknisettiedotLocation = `//*[contains(text(),'Tekniset tiedot')]`;
+    await driver.findElement(By.xpath(teknisettiedotLocation)).click();
+  } catch (error) {
+    console.log("Error in clicking 'Tekniset tiedot':");
+  }
+
+  let cpuMODEL = null;
+  try {
+    let prossessorModelXPATH = `//*[contains(text(),'Prosessori (malli)')]`;
+    let prossorinMalliTektsi = await driver.findElement(By.xpath(prossessorModelXPATH));
+    cpuMODEL = await prossorinMalliTektsi.findElement(By.xpath('following-sibling::*')).getText();
+  } catch (error) {
+    console.log("Error in getting CPU model:");
+  }
+
+  let price = null;
+  try {
+    const priceElement = await driver.findElement(By.xpath("//pwr-price[@type='integer']"));
+    price = await priceElement.getText();
+  } catch (error) {
+    console.log("Error in getting price:");
+  }
+
+  let gpuModel = null;
+  try {
+    let gpuModelXPATH = `//*[contains(text(),'Näytönohjain (malli)')]`;
+    let gpuModelTeksti = await driver.findElement(By.xpath(gpuModelXPATH));
+    gpuModel = await gpuModelTeksti.findElement(By.xpath('following-sibling::*')).getText();
+  } catch (error) {
+    console.log("Error in getting GPU model:");
+  }
+
+  let pcArray = [];
+  pcArray.push(price);
+  pcArray.push(cpuMODEL);
+  pcArray.push(gpuModel);
+
+  return pcArray;
+}
 
 async function main(){
 
@@ -82,18 +138,22 @@ async function main(){
         
       } else {
         
-        let cpuName = await getPC2(pclink,driver);
-        console.log("cpu is: ",cpuName)
-        await getBenchmark(cpuName,driver);
+        let pcInfo = await getPC2(pclink,driver);
+        console.log(pcInfo);
+        let cpuB = await getBenchmark(pcInfo[1],driver);
+        let gpuB = await getGPUBenchmark(pcInfo[2],driver);
+        console.log(cpuB);
+        console.log(gpuB);
 
-        await driver.quit();
+        if (driver) {
+          await driver.quit();
+        }
+
       }
       }catch (error){
       
       }finally{     
-/*         if (driver) {
-          await driver.quit();
-        } */
+
       }
 }
 
