@@ -3,8 +3,8 @@ const prompt = require('prompt-sync')({ sigint: true });
 
 //require('chromedriver');
 
-async function getBenchmark(processor) {
-  let driver = await new Builder().forBrowser('chrome').build();
+async function getBenchmark(processor,driver) {
+  /* let driver = await new Builder().forBrowser('chrome').build(); */
 
   try {
     await driver.get('https://www.cpubenchmark.net/cpu_list.php');
@@ -22,57 +22,79 @@ async function getBenchmark(processor) {
     let siblingText = await nextSibling.getText();
 
     console.log(text, '\n', siblingText);
+
   } catch (error) {
     //console.error('An error occurred:', error);
   } finally {
-    await driver.quit();
+    if (driver) {
+      await driver.quit();
+    }
   }
 }
 
-async function getPC(pclink) {
-    let driver = null; // Initialize the driver variable outside the try block
+async function getPC2(pclink,driver) {
+    //let driver = null; // Initialize the driver variable outside the try block
   
     try {
-      driver = await new Builder().forBrowser('chrome').build();
-  
-      await driver.get(pclink);
-  
-      await driver.findElement(By.className('coi-banner__accept')).click();
-  
-      // Get the text from the element with the specified class name
-      const text = await driver.findElement(By.className('my-spacer-solo')).getText();
-  
-      // get the cpu
-      const lines = text.split('\n');
-      if (lines.length >= 2) {
-        const secondLineWords = lines[1].split(/\s+/);
-  
-        const fetchedCpu = secondLineWords[secondLineWords.length - 1];
+        //driver = await new Builder().forBrowser('chrome').build();
+    
+        await driver.get(pclink);
+    
+        await driver.findElement(By.className('coi-banner__accept')).click();
+    
+        // Get the text from the element with the specified class name
 
-        return fetchedCpu;
-      }
-    } catch (error) {
-      console.error("An error occurred:", error);
-    } finally {
-      if (driver) {
-        await driver.quit();
-      }
+        let teknisettiedotLocation = `//*[contains(text(),'Tekniset tiedot')]`;
+
+        await driver.findElement(By.xpath(teknisettiedotLocation)).click();
+
+
+        
+        let prossessorModelXPATH = `//*[contains(text(),'Prosessori (malli)')]`;
+        let processorModel = await driver.findElement(By.xpath(prossessorModelXPATH));
+        let nextSiblingText = await processorModel.findElement(By.xpath('following-sibling::*')).getText();
+
+        return nextSiblingText;
+
+
+        } catch (error) {
+          //console.error("An error occurred:", error);
+        } finally {
+/*             if (driver) {
+              await driver.quit();
+        } */
     }
   }
+
+
+
+
+
+
 
 
 async function main(){
-    while (true) {
-        const pclink = prompt("(e to quit) link to pc:");
-        
-        if (pclink === "e") {
+  while (true) {
+    let driver = null;
+
+      try{
+      const pclink = prompt("(e to quit) link to pc:");
+      
+      if (pclink === "e") {
         break; // Exit the loop if the user inputs 'e'
-        } else {
-        let theBench = await getPC(pclink);
-        console.log("cpu is: ",theBench)
-        await getBenchmark(theBench);
-        }
-    }
+      } else {
+        driver = await new Builder().forBrowser('chrome').build();
+        let cpuName = await getPC2(pclink,driver);
+        console.log("cpu is: ",cpuName)
+        await getBenchmark(cpuName,driver);
+      }
+      }catch (error){
+      
+      }finally{     
+
+      }
+  }
 }
 
 main();
+
