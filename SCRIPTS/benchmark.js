@@ -1,7 +1,9 @@
 const { By, Key, Builder } = require('selenium-webdriver');
 const prompt = require('prompt-sync')({ sigint: true });
 
-
+/* document.addEventListener("DOMContentLoaded", function () {
+  document.getElementById("fetchButton").addEventListener("click", main);
+}); */
 
 async function getBenchmark(processor, driver) {
   try {
@@ -147,9 +149,13 @@ async function main(){
         let gpuB = await getGPUBenchmark(pcInfo[2],driver);
         console.log(cpuB);
         console.log(gpuB);
-        console.log("Value of this pc: ",(parseInt(cpuB)+parseInt(gpuB))/parseFloat(pcInfo[0]));
+
+        console.log("Value of cpu: ",((parseInt(cpuB))/parseFloat(pcInfo[0])).toFixed(2));
+        console.log("Value of gpu: ",((parseInt(gpuB))/parseFloat(pcInfo[0])).toFixed(2));
+        console.log("Value of this pc: ", ((parseInt(cpuB) + parseInt(gpuB)) / parseFloat(pcInfo[0])).toFixed(2));
 
         if (driver) {
+          console.log("Closing driver");
           await driver.quit();
         }
 
