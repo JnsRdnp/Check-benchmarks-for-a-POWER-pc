@@ -27,6 +27,7 @@ async function getBenchmark(processor,driver) {
     //console.error('An error occurred:', error);
   } finally {
     if (driver) {
+      await driver.close();
       await driver.quit();
     }
   }
@@ -48,13 +49,13 @@ async function getPC2(pclink,driver) {
 
         await driver.findElement(By.xpath(teknisettiedotLocation)).click();
 
-
         
         let prossessorModelXPATH = `//*[contains(text(),'Prosessori (malli)')]`;
-        let processorModel = await driver.findElement(By.xpath(prossessorModelXPATH));
-        let nextSiblingText = await processorModel.findElement(By.xpath('following-sibling::*')).getText();
+        let prossorinMalliTektsi = await driver.findElement(By.xpath(prossessorModelXPATH));
 
-        return nextSiblingText;
+        let cpuMODEL = await prossorinMalliTektsi.findElement(By.xpath('following-sibling::*')).getText();
+
+        return cpuMODEL;
 
 
         } catch (error) {
@@ -67,31 +68,37 @@ async function getPC2(pclink,driver) {
   }
 
 
-
-
-
-
-
-
 async function main(){
   while (true) {
     let driver = null;
 
       try{
       const pclink = prompt("(e to quit) link to pc:");
-      
+
+      driver = await new Builder().forBrowser('chrome').build();
+
       if (pclink === "e") {
-        break; // Exit the loop if the user inputs 'e'
+
+        await driver.close();
+        await driver.quit();
+        
+        break;
       } else {
-        driver = await new Builder().forBrowser('chrome').build();
+        
         let cpuName = await getPC2(pclink,driver);
         console.log("cpu is: ",cpuName)
         await getBenchmark(cpuName,driver);
+
+        await driver.close();
+        await driver.quit();
       }
       }catch (error){
       
       }finally{     
 
+      }
+      if (driver) {
+        //await driver.quit();
       }
   }
 }
